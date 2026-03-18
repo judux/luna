@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura Beauty | Catálogo Premium</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+        rel="stylesheet">
+    <!-- FontAwesome (Icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">LUNA LAGOS
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" class="active">Inicio</a></li>
+                <li><a href="#catalogo">Catálogo</a></li>
+                <li><a href="#about">Nosotros</a></li>
+            </ul>
+            <div class="nav-icons">
+                <button class="btn btn-primary btn-desfile" onclick="togglePresentation()">
+                    <i class="fa-solid fa-play"></i> Modo Desfile
+                </button>
+                <a href="#"><i class="fa-solid fa-magnifying-glass"></i></a>
+                <a href="#" class="cart-icon">
+                    <i class="fa-solid fa-bag-shopping"></i>
+                    <span class="cart-badge">0</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-content">
+            <span class="subtitle">Nueva Colección</span>
+            <h1>Descubre tu resplandor interior</h1>
+            <p>Fórmulas premium e ingredientes exquisitos, diseñados meticulosamente para realzar tu belleza natural.
+            </p>
+            <a href="#catalogo" class="btn btn-primary">Explorar Colección</a>
+        </div>
+    </header>
+
+    <!-- Filters & Catalog -->
+    <section id="catalogo" class="catalog-section">
+        <div class="section-header">
+            <h2>Pura Elegancia</h2>
+            <p>Nuestra selección exclusiva de productos</p>
+        </div>
+
+        <!-- Category Filters -->
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all">Todos</button>
+            <button class="filter-btn" data-filter="capilar">Capilar</button>
+            <button class="filter-btn" data-filter="maquillaje">Maquillaje</button>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="product-grid" id="productGrid">
+            <!-- Products will be dynamically injected here via JS -->
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3>LUNA LAGOS </h3>
+                <p>Elevando estándares de belleza, un producto a la vez. Calidad y elegancia para ti.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Enlaces Rápidos</h4>
+                <ul>
+                    <li><a href="#">Términos y Condiciones</a></li>
+                    <li><a href="#">Política de Privacidad</a></li>
+                    <li><a href="#">Envíos y Devoluciones</a></li>
+                    <li><a href="#">Contacto</a></li>
+                </ul>
+            </div>
+            <div class="footer-social">
+                <h4>Síguenos</h4>
+                <div class="social-icons">
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#"><i class="fa-brands fa-tiktok"></i></a>
+                    <a href="#"><i class="fa-brands fa-pinterest"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 LUNA LAGOS. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- Presentation Mode Overlay -->
+    <div id="presentationOverlay" class="presentation-overlay">
+        <button class="close-presentation" onclick="togglePresentation()"><i class="fa-solid fa-xmark"></i></button>
+
+        <div class="presentation-content fade-in" id="presentationContent">
+            <div class="presentation-image-wrapper">
+                <img src="" id="presentationImg" alt="Producto">
+            </div>
+            <div class="presentation-info">
+                <span id="presentationCategory" class="p-category">Cuidado Facial</span>
+                <h2 id="presentationTitle" class="p-title">Nombre del Producto</h2>
+                <div class="qr-code-box">
+                    <!-- Temporary UI generation of a QR code using an open API -->
+                    <!-- In a real scenario, this links to the specific product -->
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://lunalagos.com/buy"
+                        alt="QR Code" loading="lazy">
+                    <p>¡Escanea para 10% OFF!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="script.js"></script>
+</body>
+
+</html>
