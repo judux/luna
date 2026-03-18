@@ -5,7 +5,6 @@ const filenames = [
     "WhatsApp Image 2026-03-17 at 8.42.35 PM (3).jpeg",
     "WhatsApp Image 2026-03-17 at 8.42.35 PM.jpeg",
     "WhatsApp Image 2026-03-17 at 8.42.36 PM (1).jpeg",
-    "WhatsApp Image 2026-03-17 at 8.42.36 PM (2).jpeg",
     "WhatsApp Image 2026-03-17 at 8.42.36 PM (3).jpeg",
     "WhatsApp Image 2026-03-17 at 8.42.36 PM.jpeg",
     "WhatsApp Image 2026-03-17 at 8.42.37 PM (1).jpeg",
@@ -54,9 +53,9 @@ const filenames = [
     "capilares3.jpeg"
 ];
 
-const products = filenames.map((file, i) => {
+const allProducts = filenames.map((file, i) => {
     // Clasificar según nombre del archivo si tiene la palabra 'capilar'
-    const isCapilar = file.toLowerCase().includes('capilar'); 
+    const isCapilar = file.toLowerCase().includes('capilar');
     return {
         id: i + 1,
         title: isCapilar ? "Producto Capilar " + (i + 1) : "Producto Maquillaje " + (i + 1),
@@ -67,16 +66,21 @@ const products = filenames.map((file, i) => {
     };
 });
 
+// Remove specifically asked product ("Producto Maquillaje 5" and broken image "Producto Maquillaje 1")
+const products = allProducts.filter(p => p.title !== "Producto Maquillaje 5" && p.title !== "Producto Maquillaje 1");
+
 // DOM Elements
 const productGrid = document.getElementById('productGrid');
 const filterBtns = document.querySelectorAll('.filter-btn');
 const cartBadge = document.querySelector('.cart-badge');
 const toast = document.getElementById('toast');
 let cartCount = 0;
+let currentFilter = 'all'; // Keep track of current filter
 
-// Function to render products
+// Function to render products (Standard Grid)
 function renderProducts(category = 'all') {
     productGrid.innerHTML = ''; // Clear grid
+    productGrid.className = 'product-grid'; // Ensure standard class
 
     const filteredProducts = category === 'all' ? products : products.filter(p => p.category === category);
 
@@ -94,9 +98,7 @@ function renderProducts(category = 'all') {
                 </div>
             </div>
             <div class="product-info">
-                <span class="product-category">${product.categoryLabel}</span>
-                <h3 class="product-title">${product.title}</h3>
-                <span class="product-price">${product.price}</span>
+                
             </div>
         `;
         productGrid.appendChild(card);
@@ -117,13 +119,18 @@ filterBtns.forEach(btn => {
         btn.classList.add('active');
 
         // Filter products
-        const filterValue = btn.getAttribute('data-filter');
-        renderProducts(filterValue);
+        currentFilter = btn.getAttribute('data-filter');
+        if (isPresentationActive) {
+            renderMarquee(currentFilter);
+        } else {
+            renderProducts(currentFilter);
+            setupScrollAnimations(); // Re-trigger scroll observer for new items
+        }
     });
 });
 
 // Cartesian Math and Animations 
-window.addToCart = function() {
+window.addToCart = function () {
     // Increase count
     cartCount++;
     cartBadge.textContent = cartCount;
@@ -158,64 +165,118 @@ window.addEventListener('scroll', () => {
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
     renderProducts();
+    setupScrollAnimations();
 });
 
-// =========================================
-// Presentation Mode Logic
-// =========================================
-let presentationInterval;
-let currentPresentationIndex = 0;
-const presentationOverlay = document.getElementById('presentationOverlay');
-const pImg = document.getElementById('presentationImg');
-const pTitle = document.getElementById('presentationTitle');
-const pCategory = document.getElementById('presentationCategory');
-const pContent = document.getElementById('presentationContent');
+// Setup Scroll Animations (Landing Page Style)
+function setupScrollAnimations() {
+    // Determine which side they animate from
+    const cards = document.querySelectorAll('.product-card');
+    cards.forEach((card, index) => {
+        // Just alternating odd/even side classes
+        if (index % 2 === 0) {
+            card.classList.add('slide-hidden-left');
+        } else {
+            card.classList.add('slide-hidden-right');
+        }
+    });
 
-window.togglePresentation = function() {
+    const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1 // Let it trigger a bit earlier
+    };
+
+    const observer = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // Remove the default fade-in class so they don't fight
+                entry.target.classList.remove('fade-in-element', 'visible');
+                // Ensure browser repaints before applying the visible class
+                requestAnimationFrame(() => {
+                    entry.target.classList.add('slide-in-visible');
+                });
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+
+    setTimeout(() => {
+       cards.forEach(card => observer.observe(card));
+    }, 200);
+}
+
+// =========================================
+// Presentation Mode Logic (Infinite Marquee)
+// =========================================
+let isPresentationActive = false;
+
+window.togglePresentation = function () {
     event.preventDefault(); // prevent anchor jumps
+
+    isPresentationActive = !isPresentationActive;
+    const btn = document.querySelector('.btn-desfile');
     
-    const isActive = presentationOverlay.classList.contains('active');
-    
-    if (isActive) {
-        // Stop Presentation
-        presentationOverlay.classList.remove('active');
-        clearInterval(presentationInterval);
-        document.body.style.overflow = 'auto'; // Restore normal scrolling
-    } else {
+    if (isPresentationActive) {
         // Start Presentation
-        presentationOverlay.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Lock scrolling
+        btn.innerHTML = '<i class="fa-solid fa-stop"></i> Detener';
+        btn.classList.add('active-presentation');
+        renderMarquee(currentFilter);
         
-        // Start from beginning or random, let's start from 0
-        currentPresentationIndex = 0;
-        updatePresentationSlide();
-        
-        // Cycle every 6 seconds
-        presentationInterval = setInterval(() => {
-            // Trigger Fade Out
-            pContent.classList.remove('fade-in');
-            pContent.classList.add('fade-out');
-            
-            // Wait for fade out CSS transition to finish, then swap data and fade in
-            setTimeout(() => {
-                currentPresentationIndex = (currentPresentationIndex + 1) % products.length;
-                updatePresentationSlide();
-            }, 800); 
-            
-        }, 6000); 
+        // Scroll slightly down to focus on catalog
+        document.getElementById('catalogo').scrollIntoView({behavior: 'smooth', block: 'start'});
+    } else {
+        // Stop Presentation
+        btn.innerHTML = '<i class="fa-solid fa-play"></i> Modo Desfile';
+        btn.classList.remove('active-presentation');
+        renderProducts(currentFilter);
+        setupScrollAnimations(); // Re-apply grid animations
     }
 };
 
-function updatePresentationSlide() {
-    const prod = products[currentPresentationIndex];
-    // We append a random query parameter to the QR code so it "looks" dynamic if we wanted, 
-    // but the static link works perfectly for the demo.
+function renderMarquee(category) {
+    productGrid.innerHTML = ''; // Clear grid
+    productGrid.className = 'marquee-container'; // Change root class
+
+    const filteredProducts = category === 'all' ? products : products.filter(p => p.category === category);
+    if(filteredProducts.length === 0) return;
+
+    // Split items into 3 rows for the marquee effect
+    const rows = 3;
+    const itemsPerRow = Math.ceil(filteredProducts.length / rows);
     
-    pImg.src = prod.image;
-    pTitle.textContent = prod.title;
-    pCategory.textContent = prod.categoryLabel;
-    
-    // Trigger Fade In
-    pContent.classList.remove('fade-out');
-    pContent.classList.add('fade-in');
+    for(let r = 0; r < rows; r++) {
+        const rowProducts = filteredProducts.slice(r * itemsPerRow, (r + 1) * itemsPerRow);
+        if(rowProducts.length === 0) continue;
+
+        const trackWrapper = document.createElement('div');
+        trackWrapper.className = 'marquee-track-wrapper';
+        
+        const track = document.createElement('div');
+        // Alternating directions (Even row goes left, Odd row goes right via CSS reverse)
+        track.className = `marquee-track ${r % 2 === 0 ? 'marquee-left' : 'marquee-right'}`;
+        
+        // Duplicate content 3 times for a seamless infinite loop
+        const loopContent = [...rowProducts, ...rowProducts, ...rowProducts];
+        
+        loopContent.forEach((product) => {
+            const card = document.createElement('div');
+            card.classList.add('product-card', 'marquee-card');
+            card.innerHTML = `
+                <div class="product-image-container">
+                    <img src="${product.image}" alt="${product.title}" class="product-image" loading="lazy">
+                    <div class="product-overlay">
+                        <button class="btn-add-cart" onclick="addToCart()">Añadir al Carrito</button>
+                    </div>
+                </div>
+                <div class="product-info">
+                    <!-- Kept clean for marquee mode -->
+                </div>
+            `;
+            track.appendChild(card);
+        });
+
+        trackWrapper.appendChild(track);
+        productGrid.appendChild(trackWrapper);
+    }
 }
